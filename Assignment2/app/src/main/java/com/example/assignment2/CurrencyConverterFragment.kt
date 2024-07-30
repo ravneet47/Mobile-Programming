@@ -14,7 +14,12 @@ class CurrencyConverterFragment : Fragment() {
     private lateinit var outputTextView: TextView
     private lateinit var convertButton: Button
     private lateinit var currencySpinnerFrom: Spinner
-    private lateinit var currencySpinnerTo: Spinner
+    private lateinit var radioGroup: RadioGroup
+
+    private lateinit var radioUsd: RadioButton
+    private lateinit var radioEur: RadioButton
+    private lateinit var radioJpy: RadioButton
+    // Add more RadioButton references if needed
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -26,26 +31,25 @@ class CurrencyConverterFragment : Fragment() {
         outputTextView = view.findViewById(R.id.outputTextView)
         convertButton = view.findViewById(R.id.convertButton)
         currencySpinnerFrom = view.findViewById(R.id.currencySpinnerFrom)
-        currencySpinnerTo = view.findViewById(R.id.currencySpinnerTo)
+        radioGroup = view.findViewById(R.id.radioGroup)
 
-        // Assuming you have an array resource with currency codes
-        ArrayAdapter.createFromResource(
-            requireContext(),
-            R.array.currencies,
-            android.R.layout.simple_spinner_item
-        ).also { adapter ->
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            currencySpinnerFrom.adapter = adapter
-            currencySpinnerTo.adapter = adapter
-        }
+        radioUsd = view.findViewById(R.id.radio_usd)
+        radioEur = view.findViewById(R.id.radio_eur)
+        radioJpy = view.findViewById(R.id.radio_jpy)
+        // Initialize other RadioButtons if needed
 
         convertButton.setOnClickListener {
             it.startAnimation(AnimationUtils.loadAnimation(context, R.anim.button_click))
             val input = inputEditText.text.toString().toDoubleOrNull()
-            if (input != null) {
-                val fromCurrency = currencySpinnerFrom.selectedItem.toString()
-                val toCurrency = currencySpinnerTo.selectedItem.toString()
-                val result = convertCurrency(input, fromCurrency, toCurrency)
+            val selectedCurrency = when (radioGroup.checkedRadioButtonId) {
+                R.id.radio_usd -> "USD"
+                R.id.radio_eur -> "EUR"
+                R.id.radio_jpy -> "JPY"
+                else -> null
+            }
+
+            if (input != null && selectedCurrency != null) {
+                val result = convertCurrency(input, selectedCurrency)
                 outputTextView.text = result?.toString() ?: getString(R.string.invalid_input)
             } else {
                 outputTextView.text = getString(R.string.invalid_input)
@@ -55,15 +59,14 @@ class CurrencyConverterFragment : Fragment() {
         return view
     }
 
-    private fun convertCurrency(amount: Double, fromCurrency: String, toCurrency: String): Double? {
-        // Dummy conversion rates for demonstration purposes
-        val conversionRates = mapOf(
-            "USD" to mapOf("EUR" to 0.85, "JPY" to 110.0),
-            "EUR" to mapOf("USD" to 1.18, "JPY" to 129.0),
-            "JPY" to mapOf("USD" to 0.0091, "EUR" to 0.0078)
-        )
-        return conversionRates[fromCurrency]?.get(toCurrency)?.let { rate ->
-            amount * rate
+    private fun convertCurrency(amount: Double, currency: String): Double? {
+        // Implement your currency conversion logic here
+        // Example conversion logic (replace with actual rates):
+        return when (currency) {
+            "USD" -> amount * 1.0
+            "EUR" -> amount * 0.9
+            "JPY" -> amount * 153.0
+            else -> null
         }
     }
 }
